@@ -1,0 +1,35 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract BidToken is ERC20, Ownable {
+
+    constructor() ERC20("BidToken", "BTK") Ownable(msg.sender) {}
+
+    function mint(address to, uint256 bids) external onlyOwner {
+        require(bids > 0, "Tokens cannot be minted");
+        _mint(to, bids);
+        emit Minted(to, bids);
+    }
+
+    function burn(uint256 bids) external {
+        require(bids > 0, "Specify a valid quantity to burn tokens");
+        require(bids <= balanceOf(_msgSender()), "Burn amount exceeds balance");
+        _burn(_msgSender(), bids);
+        emit Burned(_msgSender(), bids);
+    }
+
+    function transfer(address to, uint256 bids) public override returns (bool) {
+        require(bids > 0, "Specify a valid quantity to transfer tokens");
+        require(bids <= balanceOf(_msgSender()), "Transfer amount exceeds balance");
+        _transfer(_msgSender(), to, bids);
+        emit Transferred(_msgSender(), to, bids);
+        return true;
+    }
+
+    event Minted(address indexed to, uint256 bids);
+    event Burned(address indexed from, uint256 bids);
+    event Transferred(address indexed from, address indexed to, uint256 bids);
+}
